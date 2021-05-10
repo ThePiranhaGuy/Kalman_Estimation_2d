@@ -18,7 +18,7 @@ F = np.array([[1, t, 0.5*t*t, 0, 0, 0],
               [0, 0, 0, 0, 0, 1]], dtype=np.float64)
 
 # estimate uncertainity matrix
-P = np.diag([100,25,0,100,25,0])
+P = np.diag([500,500,10,500,500,10])
 # p = diag(var(x),var(x_v),var(x_a),var(y),var(y_v),var(y_a))
 
 # Process noise matrix
