@@ -1,0 +1,101 @@
+
+def main():
+    x_init = list(map(int,input().split(",")))
+    x = list(map(int,input().split(",")))
+    u = [1,1]
+    F =[[1, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0],
+        [t, 0, 1, 0, 0],
+        [0, t, 0, 1, 0],
+        [0, 0, t, 0, 1]]
+
+    G =[[0.5*t*t, 0],
+        [0, 0.5*t*t],
+        [t, 0],
+        [0,t]]
+    import numpy as np
+from numpy.linalg import inv
+import math
+
+x_init = list(map(float, input().split(",")))
+x_init = np.array(x_init)
+
+t = 1  # time floaterval taken constant
+
+# state transition matrix F
+F = np.array([[1, t, 0.5*t*t, 0, 0, 0],
+            [0, 1, t, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 1, t, 0.5*t*t],
+            [0, 0, 0, 0, 1, t],
+            [0, 0, 0, 0, 0, 1]], dtype=np.float64)
+
+# estimate uncertainity matrix
+P = np.diag([25, 25, 10, 25, 25, 10])
+# p = diag(var(x),var(x_v),var(x_a),var(y),var(y_v),var(y_a))
+
+# Process noise matrix
+Q = np.array([[t**4/4, t**3/3, t**2/2, 0, 0, 0],
+              [t**3/2, t**2, t, 0, 0, 0],
+              [t**2/2, t, 1, 0, 0, 0],
+              [0, 0, 0, t**4/4, t**3/3, t**2/2],
+              [0, 0, 0, t**3/2, t**2, t],
+              [0, 0, 0, t**2/2, t, 1]], dtype=np.float64)
+sigma_a = 0.1  # random value really. not really measurable due to large noise/errors
+Q = Q * (sigma_a**2)
+# observation matrix
+
+H = np.array([[1, 0, 0, 0, 0, 0],
+              [0, 0, 0, 1, 0, 0]],dtype=np.float64)
+z = np.array([[0],
+              [0]],dtype=np.float64 )
+
+# measurement COV uncertainity matrix
+
+R = np.diag([0.01, 100])
+# R= diag(sigma_x_m,sigma_y_m)
+
+# begin
+x = list(map(float, input().split(",")))
+x.insert(2, x[1]/t)
+x.insert(5, x[4]/t)
+x = np.array(x)
+x = np.transpose([x])
+sigma_xy = 0
+
+# first prediction
+P = np.dot(np.dot(F, P), np.transpose(F))+Q
+
+# iterations
+#while(x is not None):
+    # measure
+try:
+    x = list(map(float, input().split(",")))
+    t=x[1];x[1]=x[2];x[2]=t
+    x.insert(2, x[1]/t)
+    x.insert(5, x[4]/t)
+    x = np.array(x)
+    x = np.transpose([x])
+except EOFError:
+    pass
+
+z[0][0] = x[0][0]
+z[1][0] = x[3][0] 
+k = np.dot(np.dot(np.dot(H,P), H.transpose()), inv(np.add(np.dot(np.dot(H, P), H.transpose()),R)))  # kalman gain
+print(f"{z}\n")
+x = np.add(x, np.dot(k, np.subtract(z, np.dot(H, x))))
+# m = np.subtract(np.identity(6),np.dot(k,H))
+# n = np.dot(np.dot(m,P),m.transpose())
+# o = np.dot(np.dot(k,R),k.transpose())
+# P = np.add(n,o)     
+# # P = np.add(np.dot(np.dot(np.dot(np.subtract( np.identity(6), np.dot(k,H))), P),np.transpose(np.subtract( np.identity(6), np.dot(k,H)))),np.dot(np.dot(k,R),k.transpose()))
+
+# sigma_xy=P[0][0]
+# # predict
+x=np.dot(F, x)
+# P=np.add(np.dot(np.dot(F, P), F.transpose()), Q)
+# measure again
+
+    
+print(f"final pos = {x[0]},{x[3]}\n{x.shape}")
+# print(f"uncerainity = {math.sqrt(sigma_xy)}")
